@@ -1,0 +1,214 @@
+/**
+ * PERFECT OVERLAY - CSS MODULE
+ * Pixel-perfect styles matching PSD reference (Image 3)
+ */
+
+.overlayContainer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: visible;
+  border-radius: 12px 12px 4px 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.teamBlockLeft,
+.teamBlockRight {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  padding: 12px 8px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.teamCode {
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.scoreBatsmanBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.scoreRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.scoreValue {
+  line-height: 1;
+}
+
+.scoreSub {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.batsmanInfo,
+.bowlerNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.batsmanName {
+  letter-spacing: 0.25px;
+  font-weight: 700;
+}
+
+.batsmanStats {
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.dividerPanel {
+  padding: 8px 12px;
+  border-radius: 6px;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.bowlerBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 8px;
+  min-width: 140px;
+  flex-shrink: 0;
+}
+
+.bowlerIcons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.runIcon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.runIcon.wicket {
+  background-color: #B71C1C;
+}
+
+.customHeader {
+  position: absolute;
+  top: 8px;
+  left: 16px;
+  z-index: 10;
+}
+
+.partnershipInfo {
+  position: absolute;
+  bottom: 8px;
+  right: 16px;
+  z-index: 10;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1280px) {
+  .overlayContainer {
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .scoreValue {
+    font-size: 42px;
+  }
+
+  .teamCode {
+    font-size: 24px;
+  }
+
+  .bowlerBlock {
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .overlayContainer {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px 10px;
+    min-height: 120px;
+  }
+
+  .scoreValue {
+    font-size: 36px;
+  }
+
+  .teamCode {
+    font-size: 20px;
+  }
+
+  .scoreBatsmanBlock {
+    min-width: 150px;
+  }
+
+  .dividerPanel {
+    min-width: 140px;
+  }
+
+  .bowlerBlock {
+    min-width: 100px;
+  }
+}
+
+@media (max-width: 540px) {
+  .overlayContainer {
+    flex-direction: column;
+    padding: 8px;
+    gap: 4px;
+    min-height: auto;
+  }
+
+  .scoreValue {
+    font-size: 32px;
+  }
+
+  .teamCode {
+    font-size: 18px;
+  }
+
+  .scoreBatsmanBlock,
+  .dividerPanel,
+  .bowlerBlock {
+    width: 100%;
+  }
+}
+
+/* Animation for stats update */
+@keyframes statsPulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate {
+  animation: statsPulse 0.3s ease-in-out;
+}

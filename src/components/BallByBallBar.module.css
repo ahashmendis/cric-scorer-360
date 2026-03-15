@@ -1,0 +1,357 @@
+/**
+ * BALL-BY-BALL BAR - CSS MODULE
+ * Pixel-perfect styles matching PSD reference (Image 4)
+ */
+
+.ballByBallBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 28px;
+  background-color: transparent;
+  display: flex;
+  gap: 1px;
+  padding: 0 8px;
+  z-index: 1000;
+  overflow-x: auto;
+  overflow-y: hidden;
+  align-items: center;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  scroll-behavior: smooth;
+}
+
+/* Customize scrollbar */
+.ballByBallBar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.ballByBallBar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 2px;
+}
+
+.ballByBallBar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 2px;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.25);
+  }
+}
+
+.ballSegment {
+  min-width: 8px;
+  max-width: 200px;
+  height: 100%;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  position: relative;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+
+  /* Event-specific colors */
+  &[data-event="dot"] {
+    background-color: #F5F5F5;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  &[data-event="single"],
+  &[data-event="double"],
+  &[data-event="three"] {
+    background-color: #1B5E20;
+  }
+
+  &[data-event="four"],
+  &[data-event="boundary"] {
+    background-color: #E725AA;
+    animation: pulseBoundary 0.4s ease-out;
+  }
+
+  &[data-event="six"] {
+    background: linear-gradient(135deg, #FF6B00 0%, #FFB300 100%);
+    animation: pulseSix 0.5s ease-out;
+    box-shadow: 0 0 8px rgba(255, 107, 0, 0.4);
+  }
+
+  &[data-event="wicket"] {
+    background-color: #B71C1C;
+    animation: pulseWicket 0.5s ease-out;
+  }
+
+  &[data-event="wide"] {
+    background-color: #FFC107;
+  }
+
+  &[data-event="no-ball"] {
+    background-color: #FF9800;
+  }
+
+  &[data-event="bye"] {
+    background-color: #9C27B0;
+  }
+
+  &[data-event="leg-bye"] {
+    background-color: #3F51B5;
+  }
+
+  /* Hover effects */
+  &:hover {
+    opacity: 0.85;
+    transform: scaleY(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+  }
+
+  /* Focus for keyboard navigation */
+  &:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+  }
+
+  /* Active/pressed state */
+  &[aria-pressed="true"] {
+    opacity: 0.7;
+    transform: scaleY(0.95);
+  }
+
+  /* Disabled state */
+  &[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.ballIndicator {
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.ballSegment:hover .ballIndicator {
+  opacity: 1;
+}
+
+.ballSegmentTooltip {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-in-out;
+  z-index: 1001;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.ballSegment:hover .ballSegmentTooltip {
+  opacity: 1;
+}
+
+/* Loading indicator */
+.ballSegmentLoading {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 0 12px;
+  min-width: 50px;
+}
+
+.loadingDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.4);
+  animation: pulse 1.5s ease-in-out infinite;
+
+  &:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  &:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+}
+
+.noData {
+  padding: 0 12px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* ========================================================================
+   ANIMATIONS
+   ======================================================================== */
+
+@keyframes pulseBoundary {
+  0% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.15);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes pulseSix {
+  0% {
+    transform: scaleY(1) brightness(1);
+    box-shadow: 0 0 8px rgba(255, 107, 0, 0.4);
+  }
+  50% {
+    transform: scaleY(1.2) brightness(1.3);
+    box-shadow: 0 0 16px rgba(255, 107, 0, 0.8);
+  }
+  100% {
+    transform: scaleY(1) brightness(1);
+    box-shadow: 0 0 8px rgba(255, 107, 0, 0.4);
+  }
+}
+
+@keyframes pulseWicket {
+  0% {
+    transform: scaleY(1) rotate(0deg);
+  }
+  25% {
+    transform: scaleY(1.15) rotate(-2deg);
+  }
+  50% {
+    transform: scaleY(1.2) rotate(2deg);
+  }
+  75% {
+    transform: scaleY(1.15) rotate(-1deg);
+  }
+  100% {
+    transform: scaleY(1) rotate(0deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ========================================================================
+   RESPONSIVE DESIGN
+   ======================================================================== */
+
+@media (max-width: 1280px) {
+  .ballByBallBar {
+    gap: 0.5px;
+    padding: 0 6px;
+  }
+}
+
+@media (max-width: 768px) {
+  .ballByBallBar {
+    height: 24px;
+    gap: 0;
+    padding: 0 4px;
+  }
+
+  .ballSegment {
+    border-radius: 6px;
+
+    &:hover {
+      transform: scaleY(1.08);
+    }
+  }
+
+  .ballSegmentTooltip {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+}
+
+@media (max-width: 540px) {
+  .ballByBallBar {
+    height: 20px;
+  }
+
+  .ballSegment {
+    border-radius: 4px;
+    min-width: 6px;
+
+    &:hover {
+      transform: scaleY(1.05);
+    }
+  }
+
+  .ballIndicator {
+    font-size: 8px;
+  }
+
+  .ballSegmentTooltip {
+    font-size: 9px;
+    padding: 2px 4px;
+  }
+
+  .loadingDot {
+    width: 3px;
+    height: 3px;
+  }
+}
+
+/* ========================================================================
+   PRINT STYLES
+   ======================================================================== */
+
+@media print {
+  .ballByBallBar {
+    position: static;
+    border: 1px solid #ccc;
+    margin-bottom: 16px;
+  }
+}
+
+/* ========================================================================
+   DARK MODE
+   ======================================================================== */
+
+[data-theme="dark"] {
+  .ballByBallBar {
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .ballSegmentTooltip {
+    background-color: rgba(255, 255, 255, 0.95);
+    color: black;
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .ballSegment[data-event="dot"] {
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* High contrast mode */
+[data-theme="high-contrast"] {
+  .ballSegment {
+    border: 2px solid white;
+    gap: 2px;
+  }
+
+  .ballSegmentTooltip {
+    background-color: black;
+    border: 2px solid white;
+  }
+}

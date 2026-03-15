@@ -1,0 +1,719 @@
+/**
+ * CRICKET BROADCASTER 360 - DESIGN TOKENS & THEME CSS
+ * Pixel-perfect implementation of PSD specifications
+ * All colors, typography, and spacing measured from reference images
+ */
+
+/* ========================================================================
+   ROOT CSS VARIABLES - All Design Tokens
+   ======================================================================== */
+
+:root {
+  /* PRIMARY BROADCAST COLORS */
+  --color-overlay-grass-bg: #4CAF50;
+  --color-overlay-dark-navy: #1A1F35;
+  --color-overlay-light-gray: #F5F5F5;
+  --color-overlay-white: #FFFFFF;
+  
+  /* ACCENTS */
+  --color-accent-hot-pink: #E725AA;
+  --color-accent-dark-green: #1B5E20;
+  --color-accent-maroon: #8B0000;
+  
+  /* TEXT COLORS */
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #B0B8D4;
+  --color-text-dark: #000000;
+  
+  /* BALL-BY-BALL EVENT COLORS */
+  --color-ball-dot: #F5F5F5;
+  --color-ball-single: #1B5E20;
+  --color-ball-boundary: #E725AA;
+  --color-ball-six: #FF6B00;
+  --color-ball-wicket: #B71C1C;
+  --color-ball-wide: #FFC107;
+  --color-ball-noball: #FF9800;
+  --color-ball-bye: #9C27B0;
+  --color-ball-legbye: #3F51B5;
+  
+  /* SHADOWS */
+  --shadow-default: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.25);
+  
+  /* SPACING */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  --spacing-xxl: 32px;
+  
+  /* OVERLAY SPACING (From PSD) */
+  --overlay-padding-h: 16px;
+  --overlay-padding-v: 12px;
+  --gap-blocks: 12px;
+  --gap-items: 8px;
+  
+  /* DIMENSIONS */
+  --overlay-height: 64px;
+  --overlay-bar-height: 28px;
+  
+  /* BORDER RADIUS */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  
+  /* FONTS */
+  --font-primary: 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', sans-serif;
+  --font-display: 'SF Pro Display', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', sans-serif;
+  
+  /* TRANSITIONS */
+  --transition-fast: 0.2s ease-in-out;
+  --transition-normal: 0.3s ease-in-out;
+  --transition-slow: 0.5s ease-in-out;
+}
+
+/* Dark theme variant */
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+}
+
+[data-theme="light"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-tertiary: #e2e8f0;
+}
+
+[data-theme="high-contrast"] {
+  --color-text-primary: #000000;
+  --color-text-secondary: #333333;
+}
+
+/* ========================================================================
+   BASE STYLES
+   ======================================================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-primary);
+  background-color: var(--bg-primary);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+/* ========================================================================
+   OVERLAY BAR (PSD Reference - Image 3)
+   ======================================================================== */
+
+.overlay-container {
+  width: 100%;
+  min-height: var(--overlay-height);
+  padding: var(--overlay-padding-v) var(--overlay-padding-h);
+  background-color: var(--color-overlay-grass-bg);
+  border-radius: var(--radius-xl) var(--radius-xl) var(--radius-sm) var(--radius-sm);
+  box-shadow: var(--shadow-default);
+  display: flex;
+  align-items: center;
+  gap: var(--gap-blocks);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Left Team Block */
+.team-block-left {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  background-color: var(--color-overlay-dark-navy);
+  padding: var(--spacing-md) var(--spacing-sm);
+  border-radius: var(--radius-lg);
+}
+
+.team-code {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: var(--color-text-primary);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+/* Score & Batsman Section */
+.score-batsman-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-items);
+  flex: 1;
+  min-width: 200px;
+}
+
+.score-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-sm);
+}
+
+.score-value {
+  font-family: var(--font-primary);
+  font-size: 56px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: var(--color-accent-hot-pink);
+  line-height: 1;
+}
+
+.score-sub {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-weight: 400;
+}
+
+.batsman-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 14px;
+}
+
+.batsman-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: 0.25px;
+}
+
+.batsman-stats {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.striker-indicator {
+  font-size: 12px;
+  color: var(--color-accent-hot-pink);
+}
+
+/* Center Divider Panel */
+.divider-panel {
+  background-color: var(--color-overlay-light-gray);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  text-align: center;
+}
+
+.divider-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--color-text-dark);
+}
+
+.divider-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  line-height: 1.3;
+}
+
+.divider-location {
+  font-size: 11px;
+  color: var(--color-text-dark);
+  opacity: 0.7;
+}
+
+/* Bowler Section */
+.bowler-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-items);
+  background-color: var(--color-accent-dark-green);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  min-width: 140px;
+}
+
+.bowler-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: 0.25px;
+}
+
+.bowler-stats {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.bowler-icons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.run-icon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.run-icon.wicket {
+  background-color: var(--color-ball-wicket);
+}
+
+/* Right Team Block */
+.team-block-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  background-color: var(--color-accent-maroon);
+  padding: var(--spacing-md) var(--spacing-sm);
+  border-radius: var(--radius-lg);
+}
+
+/* ========================================================================
+   BALL-BY-BALL BAR (PSD Reference - Image 4)
+   ======================================================================== */
+
+.ball-by-ball-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--overlay-bar-height);
+  background-color: transparent;
+  display: flex;
+  gap: 1px;
+  padding: 0 var(--spacing-sm);
+  z-index: 1000;
+  overflow-x: auto;
+  align-items: center;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.ball-by-ball-bar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.ball-by-ball-bar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.ball-by-ball-bar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 2px;
+}
+
+.ball-segment {
+  min-width: 8px;
+  max-width: 200px;
+  height: 100%;
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  position: relative;
+  flex-grow: 1;
+  max-flex-grow: 3;
+  
+  &:hover {
+    opacity: 0.85;
+    transform: scaleY(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  &[data-event="dot"] {
+    background-color: var(--color-ball-dot);
+  }
+  
+  &[data-event="single"],
+  &[data-event="double"],
+  &[data-event="three"] {
+    background-color: var(--color-ball-single);
+  }
+  
+  &[data-event="four"],
+  &[data-event="boundary"] {
+    background-color: var(--color-ball-boundary);
+    animation: pulse-boundary 0.4s ease-out;
+  }
+  
+  &[data-event="six"] {
+    background-color: var(--color-ball-six);
+    animation: pulse-six 0.4s ease-out;
+  }
+  
+  &[data-event="wicket"] {
+    background-color: var(--color-ball-wicket);
+    animation: pulse-wicket 0.5s ease-out;
+  }
+  
+  &[data-event="wide"] {
+    background-color: var(--color-ball-wide);
+  }
+  
+  &[data-event="no-ball"] {
+    background-color: var(--color-ball-noball);
+  }
+  
+  &[data-event="bye"] {
+    background-color: var(--color-ball-bye);
+  }
+  
+  &[data-event="leg-bye"] {
+    background-color: var(--color-ball-legbye);
+  }
+}
+
+.ball-segment-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+  z-index: 1001;
+}
+
+.ball-segment:hover .ball-segment-tooltip {
+  opacity: 1;
+}
+
+/* ========================================================================
+   BUTTON STYLES
+   ======================================================================== */
+
+.btn {
+  font-family: var(--font-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  
+  &:active {
+    transform: scale(0.98);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-primary {
+  background-color: var(--color-accent-hot-pink);
+  color: var(--color-text-primary);
+  
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.btn-secondary {
+  background-color: var(--color-accent-dark-green);
+  color: var(--color-text-primary);
+  
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+}
+
+.btn-large {
+  width: 72px;
+  height: 56px;
+  font-size: 18px;
+}
+
+.btn-action {
+  width: 100%;
+  height: 44px;
+  font-size: 14px;
+}
+
+/* ========================================================================
+   FORM INPUTS
+   ======================================================================== */
+
+input, textarea, select {
+  font-family: var(--font-primary);
+  background-color: var(--bg-secondary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-accent-dark-green);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  transition: all var(--transition-fast);
+  
+  &:focus {
+    outline: none;
+    border-color: var(--color-accent-hot-pink);
+    box-shadow: 0 0 0 3px rgba(231, 37, 170, 0.1);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* ========================================================================
+   REPORT STYLES
+   ======================================================================== */
+
+.report-container {
+  background-color: var(--bg-secondary);
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.report-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 2px solid var(--color-accent-hot-pink);
+}
+
+.report-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--spacing-lg);
+  
+  th {
+    background-color: var(--bg-tertiary);
+    padding: var(--spacing-md);
+    text-align: left;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--color-accent-dark-green);
+  }
+  
+  td {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 12px;
+  }
+  
+  tr:hover {
+    background-color: rgba(231, 37, 170, 0.05);
+  }
+}
+
+.stat-highlight {
+  color: var(--color-accent-hot-pink);
+  font-weight: 700;
+}
+
+/* ========================================================================
+   ANIMATIONS
+   ======================================================================== */
+
+@keyframes pulse-boundary {
+  0% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.15);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes pulse-six {
+  0% {
+    transform: scaleY(1) brightness(1);
+  }
+  50% {
+    transform: scaleY(1.2) brightness(1.2);
+  }
+  100% {
+    transform: scaleY(1) brightness(1);
+  }
+}
+
+@keyframes pulse-wicket {
+  0% {
+    transform: scaleY(1) rotate(0deg);
+  }
+  25% {
+    transform: scaleY(1.15) rotate(-2deg);
+  }
+  50% {
+    transform: scaleY(1.2) rotate(2deg);
+  }
+  100% {
+    transform: scaleY(1) rotate(0deg);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in var(--transition-normal);
+}
+
+.animate-slide-down {
+  animation: slide-down var(--transition-normal);
+}
+
+.animate-float-up {
+  animation: float-up var(--transition-normal);
+}
+
+/* ========================================================================
+   RESPONSIVE DESIGN
+   ======================================================================== */
+
+/* Tablet (768px and up) */
+@media (max-width: 768px) {
+  :root {
+    --gap-blocks: 8px;
+    --gap-items: 6px;
+    --overlay-padding-h: 12px;
+  }
+  
+  .overlay-container {
+    flex-wrap: wrap;
+    min-height: 120px;
+  }
+  
+  .score-value {
+    font-size: 42px;
+  }
+  
+  .bowler-block {
+    min-width: 100px;
+  }
+}
+
+/* Mobile (540px and below) */
+@media (max-width: 540px) {
+  :root {
+    --gap-blocks: 4px;
+    --overlay-padding-h: 8px;
+    --overlay-padding-v: 8px;
+  }
+  
+  .overlay-container {
+    flex-direction: column;
+    min-height: auto;
+  }
+  
+  .score-value {
+    font-size: 32px;
+  }
+  
+  .team-code {
+    font-size: 20px;
+  }
+  
+  .btn-large {
+    width: 56px;
+    height: 44px;
+    font-size: 14px;
+  }
+}
+
+/* ========================================================================
+   DARK MODE OVERRIDES
+   ======================================================================== */
+
+.dark-mode {
+  background-color: #0f172a;
+  color: #f1f5f9;
+}
+
+/* ========================================================================
+   PRINT STYLES (For PDF/Report Export)
+   ======================================================================== */
+
+@media print {
+  body {
+    background-color: white;
+    color: black;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .report-container {
+    box-shadow: none;
+    page-break-inside: avoid;
+  }
+}
