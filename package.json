@@ -22,7 +22,9 @@
     "react-dom": "^18.2.0",
     "ws": "^8.14.0",
     "zustand": "^4.4.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.0",
