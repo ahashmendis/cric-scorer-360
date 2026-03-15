@@ -1,115 +1,147 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import styles from './BallByBallBar.module.css';
-import { COLORS, DIMENSIONS } from '../styles/design-tokens.js';
-import { createBallSegments, getEventLabel } from '../styles/color-map.js';
 
 /**
  * BALL-BY-BALL BAR COMPONENT
- * Matches PSD Reference (Image 4) exactly
- * 
- * Props:
- *   ballHistory: Array of ball events [{ ballNumber, eventType, runs, timestamp }, ...]
- *   onBallClick: Callback when a ball segment is clicked
- *   autoScroll: Auto-scroll to show latest balls (default: true)
+ * Hardcoded with PSD Reference (Images 1 & 2)
+ * Shows match flow with team colors and events
  */
-const BallByBallBar = ({
-  ballHistory = [],
-  onBallClick = () => {},
-  autoScroll = true,
-}) => {
-  const containerRef = useRef(null);
-  const segments = createBallSegments(ballHistory);
+const BallByBallBar = ({ matchData }) => {
+  const ballSequence = useMemo(() => {
+    if (!matchData?.ballsHistory) return [];
+    
+    return matchData.ballsHistory.map((ball, idx) => {
+      let color = '#F5F5F5'; // Dot (default)
+      let label = '•';
+      let event = 'Dot';
 
-  // Auto-scroll to show latest balls
-  useEffect(() => {
-    if (autoScroll && containerRef.current) {
-      const container = containerRef.current;
-      // Scroll to right with a small delay to ensure DOM is updated
-      setTimeout(() => {
-        container.scrollLeft = container.scrollWidth - container.clientWidth;
-      }, 0);
-    }
-  }, [ballHistory.length, autoScroll]);
+      if (ball.runs === 1) {
+        color = '#1B5E20';
+        label = '1';
+        event = 'Single';
+      } else if (ball.runs === 4) {
+        color = '#E725AA';
+        label = '4';
+        event = 'Boundary';
+      } else if (ball.runs === 6) {
+        color = '#FF6B00';
+        label = '6';
+        event = 'Six';
+      } else if (ball.isWicket) {
+        color = '#B71C1C';
+        label = 'W';
+        event = 'Wicket';
+      } else if (ball.isWide) {
+        color = '#FFC107';
+        label = 'Wd';
+        event = 'Wide';
+      } else if (ball.isNoBall) {
+        color = '#FF9800';
+        label = 'Nb';
+        event = 'No-Ball';
+      }
 
-  const handleSegmentClick = useCallback(
-    (ball) => {
-      onBallClick(ball);
-    },
-    [onBallClick]
-  );
+      return { color, label, run: idx + 1, event };
+    });
+  }, [matchData]);
 
-  const handleSegmentHover = useCallback((e, ball) => {
-    const tooltip = e.currentTarget.querySelector(`.${styles.ballSegmentTooltip}`);
-    if (tooltip) {
-      tooltip.textContent = `Ball ${ball.ballNumber}: ${ball.label}`;
-    }
-  }, []);
-
+  // Get team colors from match data
+  const homeTeamColor = matchData?.teams?.batting?.color || '#1B5E20'; // Dark green
+  const awayTeamColor = matchData?.teams?.bowling?.color || '#B71C1C'; // Dark red
+  
   return (
-    <div
-      className={styles.ballByBallBar}
-      ref={containerRef}
-      role="region"
-      aria-label="Ball-by-ball indicator bar"
-    >
-      {segments.length === 0 ? (
-        <div className={styles.noData} style={{ color: COLORS.textSecondary }}>
-          Waiting for first ball...
-        </div>
-      ) : (
-        segments.map((segment) => (
-          <div
-            key={segment.id}
-            className={styles.ballSegment}
-            data-event={segment.eventType}
-            data-ball-number={segment.ballNumber}
-            style={{
-              backgroundColor: segment.color,
-              minWidth: DIMENSIONS.minBallSegmentWidth,
-              maxWidth: DIMENSIONS.maxBallSegmentWidth,
-              height: '100%',
-            }}
-            onClick={() => handleSegmentClick(segment)}
-            onMouseEnter={(e) => handleSegmentHover(e, segment)}
-            title={`Ball ${segment.ballNumber}: ${segment.label}`}
-            role="button"
-            tabIndex={0}
-            aria-pressed="false"
-            aria-label={`Ball ${segment.ballNumber}: ${segment.label}`}
-          >
-            {/* Visual indicator for sixes and wickets */}
-            {segment.eventType === 'six' && (
-              <div className={styles.ballIndicator} title="Six!">
-                ⚡
-              </div>
-            )}
-            {segment.eventType === 'wicket' && (
-              <div className={styles.ballIndicator} title="Wicket!">
-                ⚔️
-              </div>
-            )}
-            {segment.eventType === 'boundary' && (
-              <div className={styles.ballIndicator} title="Four!">
-                ⬤
-              </div>
-            )}
-
-            {/* Tooltip */}
-            <div className={styles.ballSegmentTooltip}>
-              {`Ball ${segment.ballNumber}: ${segment.label}`}
-            </div>
+    <div className={styles.container}>
+      <h3>🎯 Ball-by-Ball & Match Flow</h3>
+      
+      {/* Hardcoded Match Flow Bars (from PSD Images 1 & 2) */}
+      <div className={styles.flowSection}>
+        {/* Bar 1: Home Team Perspective */}
+        <div className={styles.flowBar} title="Match flow - Home team at bat">
+          <div className={styles.segment} style={{ flex: 1, backgroundColor: homeTeamColor }}>
+            <span className={styles.segmentText}>{matchData?.teams?.batting?.name?.substring(0, 3).toUpperCase() || 'HOME'}</span>
           </div>
-        ))
-      )}
-
-      {/* Loading indicator for live matches */}
-      {ballHistory.length > 0 && (
-        <div className={styles.ballSegmentLoading} title="Live updates...">
-          <span className={styles.loadingDot} />
-          <span className={styles.loadingDot} />
-          <span className={styles.loadingDot} />
+          <div className={styles.segment} style={{ flex: 0.4, backgroundColor: '#E725AA' }}>
+            <span className={styles.segmentText} style={{ fontSize: '11px' }}>⚡</span>
+          </div>
+          <div className={styles.segment} style={{ flex: 1.2, backgroundColor: homeTeamColor }}>
+            <span className={styles.segmentText}>{matchData?.teams?.batting?.runs || 0}/{matchData?.teams?.batting?.wickets || 0}</span>
+          </div>
+          <div className={styles.segment} style={{ flex: 0.8, backgroundColor: '#E5E5E5' }}>
+            <span className={styles.segmentText} style={{ color: '#333', fontSize: '11px' }}>{matchData?.teams?.batting?.overs || '0.0'}</span>
+          </div>
+          <div className={styles.segment} style={{ flex: 1.2, backgroundColor: awayTeamColor }}>
+            <span className={styles.segmentText}>{matchData?.teams?.bowling?.name?.substring(0, 3).toUpperCase() || 'AWAY'}</span>
+          </div>
         </div>
-      )}
+
+        {/* Bar 2: Away Team Perspective (Reversed) */}
+        <div className={styles.flowBar} title="Match flow - Away team perspective" style={{ marginTop: '8px' }}>
+          <div className={styles.segment} style={{ flex: 1.2, backgroundColor: awayTeamColor }}>
+            <span className={styles.segmentText}>{matchData?.teams?.bowling?.name?.substring(0, 3).toUpperCase() || 'AWAY'}</span>
+          </div>
+          <div className={styles.segment} style={{ flex: 0.8, backgroundColor: '#E5E5E5' }}>
+            <span className={styles.segmentText} style={{ color: '#333', fontSize: '11px' }}>-</span>
+          </div>
+          <div className={styles.segment} style={{ flex: 1.2, backgroundColor: awayTeamColor }}>
+            <span className={styles.segmentText}>BOWLING</span>
+          </div>
+          <div className={styles.segment} style={{ flex: 0.4, backgroundColor: '#E725AA' }}>
+            <span className={styles.segmentText} style={{ fontSize: '11px' }}>⚡</span>
+          </div>
+          <div className={styles.segment} style={{ flex: 1, backgroundColor: homeTeamColor }}>
+            <span className={styles.segmentText}>{matchData?.teams?.batting?.name?.substring(0, 3).toUpperCase() || 'HOME'}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Individual Ball-by-Ball Sequence */}
+      <div className={styles.ballBar}>
+        <div className={styles.ballSequence}>
+          {ballSequence.length === 0 ? (
+            <p className={styles.noData}>No balls played yet - Match ready to start</p>
+          ) : (
+            ballSequence.map((ball, idx) => (
+              <div
+                key={idx}
+                className={styles.ball}
+                style={{ backgroundColor: ball.color }}
+                title={`Ball ${ball.run}: ${ball.event}`}
+              >
+                <span className={styles.label}>{ball.label}</span>
+                <span className={styles.tooltip}>{ball.event}</span>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Event Legend */}
+      <div className={styles.legend}>
+        <div className={styles.legendItem}>
+          <div className={styles.legendColor} style={{ backgroundColor: '#F5F5F5', border: '1px solid #999' }}></div>
+          <span>Dot</span>
+        </div>
+        <div className={styles.legendItem}>
+          <div className={styles.legendColor} style={{ backgroundColor: '#1B5E20' }}></div>
+          <span>Single</span>
+        </div>
+        <div className={styles.legendItem}>
+          <div className={styles.legendColor} style={{ backgroundColor: '#E725AA' }}></div>
+          <span>Boundary</span>
+        </div>
+        <div className={styles.legendItem}>
+          <div className={styles.legendColor} style={{ backgroundColor: '#FF6B00' }}></div>
+          <span>Six</span>
+        </div>
+        <div className={styles.legendItem}>
+          <div className={styles.legendColor} style={{ backgroundColor: '#B71C1C' }}></div>
+          <span>Wicket</span>
+        </div>
+        <div className={styles.legendItem}>
+          <div className={styles.legendColor} style={{ backgroundColor: '#FFC107' }}></div>
+          <span>Wide</span>
+        </div>
+      </div>
     </div>
   );
 };

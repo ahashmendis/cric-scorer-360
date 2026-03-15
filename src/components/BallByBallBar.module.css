@@ -1,103 +1,256 @@
 /**
  * BALL-BY-BALL BAR - CSS MODULE
- * Pixel-perfect styles matching PSD reference (Image 4)
+ * Hardcoded bars from PSD reference (Images 1 & 2)
+ * Pixel-perfect match with team colors and events
  */
 
-.ballByBallBar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 28px;
-  background-color: transparent;
-  display: flex;
-  gap: 1px;
-  padding: 0 8px;
-  z-index: 1000;
-  overflow-x: auto;
-  overflow-y: hidden;
-  align-items: center;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-  scroll-behavior: smooth;
-}
-
-/* Customize scrollbar */
-.ballByBallBar::-webkit-scrollbar {
-  height: 4px;
-}
-
-.ballByBallBar::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 2px;
-}
-
-.ballByBallBar::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 2px;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.25);
-  }
-}
-
-.ballSegment {
-  min-width: 8px;
-  max-width: 200px;
-  height: 100%;
+.container {
+  background: #1E293B;
+  border: 1px solid #475569;
   border-radius: 8px;
-  transition: all 0.2s ease-in-out;
-  cursor: pointer;
-  position: relative;
-  flex-grow: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
+.container h3 {
+  color: #F1F5F9;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* FLOW SECTION - Hardcoded bars from PSD */
+.flowSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.flowBar {
+  display: flex;
+  width: 100%;
+  height: 48px;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.segment {
   display: flex;
   align-items: center;
   justify-content: center;
-  user-select: none;
+  padding: 0 8px;
+  transition: all 0.3s ease;
+  position: relative;
+  flex-shrink: 0;
+}
 
-  /* Event-specific colors */
-  &[data-event="dot"] {
-    background-color: #F5F5F5;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+.segment:hover {
+  filter: brightness(1.1);
+  z-index: 10;
+}
+
+.segmentText {
+  color: #FFF;
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  font-family: 'Courier New', monospace;
+}
+
+/* BALL SEQUENCE - Individual balls */
+.ballBar {
+  background: #0F172A;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  padding: 12px;
+  height: auto;
+  min-height: 60px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.ballSequence {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.ball {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.ball:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.3);
+  z-index: 10;
+}
+
+.label {
+  color: #FFF;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+  z-index: 2;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: #FFF;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 100;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ball:hover .tooltip {
+  opacity: 1;
+}
+
+/* NO DATA MESSAGE */
+.noData {
+  color: #CBD5E1;
+  font-size: 13px;
+  text-align: center;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+  font-style: italic;
+}
+
+/* LEGEND */
+.legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 6px;
+  border: 1px solid #475569;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendColor {
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.legend span {
+  color: #CBD5E1;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* SCROLLBAR STYLING */
+.ballBar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.ballBar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ballBar::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+
+.ballBar::-webkit-scrollbar-thumb:hover {
+  background: #64748B;
+}
+
+/* ANIMATIONS */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(231, 37, 170, 0.4);
+  }
+}
+
+/* Event-specific animations */
+.ball:has(> .label:contains("W")) {
+  animation: glow 1s ease-in-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .flowBar {
+    height: 40px;
   }
 
-  &[data-event="single"],
-  &[data-event="double"],
-  &[data-event="three"] {
-    background-color: #1B5E20;
+  .segmentText {
+    font-size: 11px;
   }
 
-  &[data-event="four"],
-  &[data-event="boundary"] {
-    background-color: #E725AA;
-    animation: pulseBoundary 0.4s ease-out;
+  .ball {
+    width: 32px;
+    height: 32px;
   }
 
-  &[data-event="six"] {
-    background: linear-gradient(135deg, #FF6B00 0%, #FFB300 100%);
-    animation: pulseSix 0.5s ease-out;
-    box-shadow: 0 0 8px rgba(255, 107, 0, 0.4);
+  .label {
+    font-size: 12px;
   }
 
-  &[data-event="wicket"] {
-    background-color: #B71C1C;
-    animation: pulseWicket 0.5s ease-out;
+  .legend {
+    gap: 8px;
   }
 
-  &[data-event="wide"] {
-    background-color: #FFC107;
+  .legendColor {
+    width: 16px;
+    height: 16px;
   }
-
-  &[data-event="no-ball"] {
-    background-color: #FF9800;
-  }
-
-  &[data-event="bye"] {
-    background-color: #9C27B0;
-  }
-
-  &[data-event="leg-bye"] {
-    background-color: #3F51B5;
-  }
+}
 
   /* Hover effects */
   &:hover {
