@@ -30,7 +30,7 @@ const BowlingScorecard = ({
     const wickets = bowlers.reduce((sum, b) => sum + (b.wickets || 0), 0);
     const maidens = bowlers.reduce((sum, b) => sum + (b.maidens || 0), 0);
     const totalBalls = bowlers.reduce((sum, b) => sum + (b.totalBalls || 0), 0);
-    - const economy = totalBalls > 0 ? (runs / totalBalls * 6).toFixed(2) : '0.00';
+    const economy = totalBalls > 0 ? (runs / totalBalls * 6).toFixed(2) : '0.00';
     
     return { runs, wickets, maidens, economy };
   }, [bowlers]);

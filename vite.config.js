@@ -6,8 +6,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    host: 'localhost',
+    host: '0.0.0.0',
     cors: true,
+    hmr: false,
+    middlewareMode: false,
   },
   build: {
     outDir: 'dist',
