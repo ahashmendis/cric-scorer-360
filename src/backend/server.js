@@ -345,6 +345,108 @@ const generateOverlayHTML = (template, data) => {
     .ticker-item { display: flex; flex-direction: column; align-items: center; }
     .wickets-section { max-height: 150px; overflow-y: auto; }
     .wicket-item { padding: 4px 0; font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    
+    /* HARDCODED PSD BARS STYLING */
+    .ball-bar-container {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 1200px;
+      background: #1E293B;
+      border: 2px solid #FFD700;
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 101;
+    }
+    .ball-bar-title {
+      color: #F1F5F9;
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+    }
+    .flow-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .flow-bar {
+      display: flex;
+      width: 100%;
+      height: 48px;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .flow-segment {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 8px;
+      transition: all 0.3s ease;
+      color: #FFF;
+      font-weight: 600;
+      font-size: 13px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      font-family: 'Courier New', monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ball-sequence-container {
+      background: #0F172A;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      padding: 12px;
+      height: 60px;
+      overflow-x: auto;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .ball {
+      width: 36px;
+      height: 36px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      color: #FFF;
+      font-size: 11px;
+      font-weight: bold;
+    }
+    .legend-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 12px;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 6px;
+      border: 1px solid #475569;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+    .legend-text {
+      color: #CBD5E1;
+      font-size: 12px;
+      white-space: nowrap;
+    }
   `;
 
   let templateContent = '';
@@ -457,69 +559,242 @@ const generateOverlayHTML = (template, data) => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cricket Overlay</title>
-    <style>${baseCSS}</style>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { 
+        background: transparent; 
+        font-family: Arial, sans-serif; 
+        overflow: hidden;
+        width: 1920px;
+        height: 1080px;
+      }
+      
+      .overlay-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: auto;
+      }
+      
+      /* BOTTOM BAR OVERLAY */
+      .bottom-bar {
+        width: 100%;
+        height: 100px;
+        background: linear-gradient(to bottom, #00000040, #000000);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 40px;
+        border-top: 3px solid #FFD700;
+      }
+      
+      .bar-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex: 1;
+      }
+      
+      .team-badge {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+        font-size: 32px;
+        border: 3px solid #FFD700;
+        flex-shrink: 0;
+      }
+      
+      .score-display {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      
+      .score-big {
+        font-size: 52px;
+        font-weight: bold;
+        color: #FFD700;
+        line-height: 1;
+      }
+      
+      .score-small {
+        font-size: 14px;
+        color: white;
+        line-height: 1.2;
+      }
+      
+      .batsman-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        color: white;
+      }
+      
+      .batsman-name {
+        font-size: 16px;
+        font-weight: bold;
+        color: #FFD700;
+      }
+      
+      .batsman-stats {
+        font-size: 13px;
+        color: #CCC;
+      }
+      
+      .center-info {
+        flex: 1;
+        text-align: center;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      
+      .center-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #FFD700;
+      }
+      
+      .center-subtitle {
+        font-size: 14px;
+        color: #CCC;
+      }
+      
+      .wickets-indicator {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .wicket {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #EF4444;
+        border: 1px solid #FFD700;
+      }
+      
+      .run-rate {
+        font-size: 16px;
+        font-weight: bold;
+        color: white;
+      }
+    </style>
 </head>
 <body>
-    <div class="overlay-main">
-        <div class="template-container ${template}">
-            ${templateContent}
+    <div class="overlay-container">
+        <div class="bottom-bar">
+            <!-- LEFT SECTION -->
+            <div class="bar-section">
+                <div class="team-badge" id="leftTeamBadge" style="background: #1e3a5f;">🏏</div>
+                
+                <div class="score-display">
+                    <div class="score-big" id="leftScore">0/0</div>
+                    <div class="score-small" id="leftOvers">(0.0)</div>
+                </div>
+                
+                <div class="batsman-info">
+                    <div class="batsman-name" id="batsman1Name">Batsman 1</div>
+                    <div class="batsman-stats" id="batsman1Stats">0(0)</div>
+                    <div class="batsman-stats">•</div>
+                    <div class="batsman-name" id="batsman2Name">Batsman 2</div>
+                    <div class="batsman-stats" id="batsman2Stats">0(0)</div>
+                </div>
+            </div>
+            
+            <!-- CENTER SECTION -->
+            <div class="center-info">
+                <div class="center-title" id="centerTitle">Match Info</div>
+                <div class="center-subtitle" id="centerSubtitle">Updates here</div>
+                <div class="wickets-indicator" id="wicketsDisplay"></div>
+            </div>
+            
+            <!-- RIGHT SECTION -->
+            <div class="bar-section" style="justify-content: flex-end; flex-direction: row-reverse;">
+                <div class="team-badge" id="rightTeamBadge" style="background: #2d5016;">🏏</div>
+                
+                <div style="text-align: right;">
+                    <div class="score-big" id="rightScore">0/0</div>
+                    <div class="score-small" id="rightOvers">(0.0)</div>
+                </div>
+                
+                <div class="batsman-info" style="text-align: right;">
+                    <div class="batsman-name" id="bowler1Name">Bowler</div>
+                    <div class="batsman-stats" id="bowler1Stats">0/0</div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         const ws = new WebSocket(\`ws://\${window.location.host}\`);
-
+        
         ws.onmessage = (event) => {
             const msg = JSON.parse(event.data);
             if (msg.type === 'init' || msg.type === 'scoreUpdate') {
                 updateOverlay(msg.data);
             }
         };
-
-        const updateOverlay = (matchData) => {
-            const { teams, currentBatsmen, currentBowler, partnership, crr, venue, format, status, customText, winsFromThisBall } = matchData;
+        
+        const updateOverlay = (data) => {
+            // Left team info
+            document.getElementById('leftScore').textContent = 
+                \`\${data.teams.batting.runs}/\${data.teams.batting.wickets}\`;
+            document.getElementById('leftOvers').textContent = \`(\${data.teams.batting.overs})\`;
+            document.getElementById('leftTeamBadge').textContent = 
+                data.teams.batting.name.substring(0, 1);
             
-            // Update all elements
-            if (document.getElementById('teamName')) document.getElementById('teamName').textContent = teams.batting.name;
-            if (document.getElementById('totalScore')) document.getElementById('totalScore').textContent = \`\${teams.batting.runs}/\${teams.batting.wickets}\`;
-            if (document.getElementById('overs')) document.getElementById('overs').textContent = \`\${teams.batting.overs} ov\`;
-            if (document.getElementById('crr')) document.getElementById('crr').textContent = crr || '0.00';
-
-            // Batsman
-            if (currentBatsmen && currentBatsmen.striker) {
-                if (document.getElementById('batsman')) document.getElementById('batsman').textContent = currentBatsmen.striker.name;
-                if (document.getElementById('batRuns')) document.getElementById('batRuns').textContent = currentBatsmen.striker.runs;
-                if (document.getElementById('batBalls')) document.getElementById('batBalls').textContent = currentBatsmen.striker.balls;
-                if (document.getElementById('batFours')) document.getElementById('batFours').textContent = currentBatsmen.striker.fours;
-                if (document.getElementById('batSixes')) document.getElementById('batSixes').textContent = currentBatsmen.striker.sixes;
-                const sr = currentBatsmen.striker.balls > 0 ? ((currentBatsmen.striker.runs / currentBatsmen.striker.balls) * 100).toFixed(1) : '-';
-                if (document.getElementById('batSR')) document.getElementById('batSR').textContent = sr;
+            // Batsmen info
+            document.getElementById('batsman1Name').textContent = 
+                data.currentBatsmen.striker.name;
+            document.getElementById('batsman1Stats').textContent = 
+                \`\${data.currentBatsmen.striker.runs}(\${data.currentBatsmen.striker.balls})\`;
+            
+            document.getElementById('batsman2Name').textContent = 
+                data.currentBatsmen.nonStriker.name;
+            document.getElementById('batsman2Stats').textContent = 
+                \`\${data.currentBatsmen.nonStriker.runs}(\${data.currentBatsmen.nonStriker.balls})\`;
+            
+            // Center info
+            const crr = parseFloat(data.crr) || 0;
+            document.getElementById('centerTitle').textContent = 
+                \`\${data.teams.batting.name} vs \${data.teams.bowling.name}\`;
+            document.getElementById('centerSubtitle').textContent = 
+                \`CRR: \${crr.toFixed(2)}\`;
+            
+            // Wickets indicator
+            const wicketsDiv = document.getElementById('wicketsDisplay');
+            wicketsDiv.innerHTML = '';
+            for (let i = 0; i < 10; i++) {
+                const wicket = document.createElement('div');
+                wicket.className = 'wicket';
+                if (i < data.teams.batting.wickets) {
+                    wicket.style.background = '#EF4444';
+                } else {
+                    wicket.style.background = '#10B981';
+                }
+                wicketsDiv.appendChild(wicket);
             }
-
-            // Bowler
-            if (currentBowler) {
-                if (document.getElementById('bowler')) document.getElementById('bowler').textContent = currentBowler.name;
-                if (document.getElementById('bowlOvers')) document.getElementById('bowlOvers').textContent = currentBowler.overs;
-                if (document.getElementById('bowlRuns')) document.getElementById('bowlRuns').textContent = currentBowler.runs;
-                if (document.getElementById('bowlWkts')) document.getElementById('bowlWkts').textContent = currentBowler.wickets;
-                const overs = parseFloat(currentBowler.overs);
-                const econ = overs > 0 ? (currentBowler.runs / overs).toFixed(2) : '-';
-                if (document.getElementById('bowlEcon')) document.getElementById('bowlEcon').textContent = econ;
-            }
-
-            // Partnership
-            if (document.getElementById('partnership')) document.getElementById('partnership').textContent = partnership.runs;
-            if (document.getElementById('partBalls')) document.getElementById('partBalls').textContent = partnership.balls;
-
-            // Custom text
-            if (document.getElementById('customHeader')) document.getElementById('customHeader').textContent = customText.header;
-            if (document.getElementById('customMiddle')) document.getElementById('customMiddle').textContent = customText.middle;
-            if (document.getElementById('customFooter')) document.getElementById('customFooter').textContent = customText.footer;
-
-            // Match Info
-            if (document.getElementById('venue')) document.getElementById('venue').textContent = venue;
-            if (document.getElementById('format')) document.getElementById('format').textContent = format;
-            if (document.getElementById('status')) document.getElementById('status').textContent = status === 'live' ? '🔴 LIVE' : status === 'completed' ? '✓ COMPLETED' : '⏸ PAUSED';
+            
+            // Right team info
+            document.getElementById('rightScore').textContent = 
+                \`\${data.currentBowler.runs}/\${data.currentBowler.wickets}\`;
+            document.getElementById('rightOvers').textContent = \`(\${data.currentBowler.overs})\`;
+            document.getElementById('rightTeamBadge').textContent = 
+                data.teams.bowling.name.substring(0, 1);
+            
+            document.getElementById('bowler1Name').textContent = 
+                data.currentBowler.name;
+            document.getElementById('bowler1Stats').textContent = 
+                \`\${data.currentBowler.runs}/\${data.currentBowler.wickets}\`;
         };
     </script>
 </body>
