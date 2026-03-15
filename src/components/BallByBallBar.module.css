@@ -252,33 +252,6 @@
   }
 }
 
-  /* Hover effects */
-  &:hover {
-    opacity: 0.85;
-    transform: scaleY(1.1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    z-index: 10;
-  }
-
-  /* Focus for keyboard navigation */
-  &:focus {
-    outline: 2px solid rgba(255, 255, 255, 0.5);
-    outline-offset: 2px;
-  }
-
-  /* Active/pressed state */
-  &[aria-pressed="true"] {
-    opacity: 0.7;
-    transform: scaleY(0.95);
-  }
-
-  /* Disabled state */
-  &[aria-disabled="true"] {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
 .ballIndicator {
   font-size: 10px;
   line-height: 1;

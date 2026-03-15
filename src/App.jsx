@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
+import BallByBallBar from './components/BallByBallBar';
+import OverlayPreview from './components/OverlayPreview';
+import useKeyboardShortcuts from './components/hooks/useKeyboardShortcuts';
+import BattingScorecard from './components/reports/BattingScorecard';
+import BowlingScorecard from './components/reports/BowlingScorecard';
+import PartnershipReport from './components/reports/PartnershipReport';
+import MainScorecard from './components/reports/MainScorecard';
+import { COLORS } from './styles/DesignTokens';
 
 function App() {
   const [matchData, setMatchData] = useState(null);
   const [ws, setWs] = useState(null);
-  const [activeTab, setActiveTab] = useState('scorecard'); // scorecard, playing11, overlay, settings
-  const [showBatsmanSwap, setShowBatsmanSwap] = useState(false);
-  const [showBowlerChange, setShowBowlerChange] = useState(false);
+  const [showBattingReport, setShowBattingReport] = useState(false);
+  const [showBowlingReport, setShowBowlingReport] = useState(false);
+  const [showPartnershipReport, setShowPartnershipReport] = useState(false);
+  const [showMainReport, setShowMainReport] = useState(false);
 
   useEffect(() => {
     axios.get('http://localhost:3000/api/match').then(res => setMatchData(res.data));
@@ -48,744 +57,374 @@ function App() {
     axios.post('http://localhost:3000/api/wicket', { dismissal });
   };
 
-  const uploadLogo = (team, file) => {
-    const formData = new FormData();
-    formData.append('logo', file);
-    formData.append('team', team);
-    axios.post('http://localhost:3000/api/upload-logo', formData);
-  };
-
-  const calculateWinProbability = () => {
-    axios.get('http://localhost:3000/api/calculate-win').then(res => {
-      setMatchData(res.data);
-    });
-  };
+  // Keyboard shortcuts integration
+  useKeyboardShortcuts(
+    matchData,
+    updateMatch,
+    recordWicket,
+    swapBatsmen,
+    changeBowler
+  );
 
   if (!matchData) return <div className="loading">🔄 Loading...</div>;
 
+  // Calculate rates
+  const currentOvers = parseFloat(matchData.teams.batting.overs) || 0;
+  const currentRuns = matchData.teams.batting.runs || 0;
+  const crr = currentOvers > 0 ? (currentRuns / currentOvers).toFixed(2) : '0.00';
+  const remainingBalls = Math.ceil((matchData.totalOvers - currentOvers) * 6);
+  const runsNeeded = Math.max(0, (matchData.teams.batting.target || 0) - currentRuns);
+  const rrr = remainingBalls > 0 ? (runsNeeded / (remainingBalls / 6)).toFixed(2) : '0.00';
+
   return (
-    <div className="app">
-      <header className="header">
-        <h1>🎬 Cricket Broadcaster Pro</h1>
-        <div className="header-info">
+    <div className="app-container">
+      {/* HEADER */}
+      <header className="app-header">
+        <div className="header-left">
+          <h1>🎬 Cricket Broadcast</h1>
+        </div>
+        <div className="header-center">
           <input
             type="text"
-            value={matchData.matchTitle}
+            value={matchData.matchTitle || ''}
             onChange={(e) => updateMatch({ matchTitle: e.target.value })}
-            className="match-title-input"
-            placeholder="Match Title"
+            className="header-input"
+            placeholder="Enter match title..."
           />
+        </div>
+        <div className="header-right">
           <select
-            value={matchData.overlayTemplate}
+            value={matchData.overlayTemplate || 'full-scorecard'}
             onChange={(e) => updateMatch({ overlayTemplate: e.target.value })}
-            className="template-select"
+            className="header-select"
           >
             <option value="full-scorecard">📊 Full Scorecard</option>
             <option value="batsman-card">🏏 Batsman Card</option>
             <option value="bowler-card">⚾ Bowler Card</option>
             <option value="batting-summary">📈 Batting Summary</option>
-            <option value="bowling-summary">📉 Bowling Summary</option>
-            <option value="partnership">🤝 Partnership Card</option>
-            <option value="mini-ticker">📱 Mini Ticker</option>
+            <option value="partnership">🤝 Partnership</option>
           </select>
-          <span className="status-live">● LIVE</span>
+          <span className="live-indicator">● LIVE</span>
         </div>
       </header>
 
-      <div className="tab-navigation">
-        <button
-          className={`tab-btn ${activeTab === 'scorecard' ? 'active' : ''}`}
-          onClick={() => setActiveTab('scorecard')}
-        >
-          📊 Scorecard
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'playing11' ? 'active' : ''}`}
-          onClick={() => setActiveTab('playing11')}
-        >
-          🏏 Playing XI
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'overlay' ? 'active' : ''}`}
-          onClick={() => setActiveTab('overlay')}
-        >
-          🎨 Overlay
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
-          onClick={() => setActiveTab('settings')}
-        >
-          ⚙️ Settings
-        </button>
-      </div>
-
-      <div className="container">
-        {/* SCORECARD TAB */}
-        {activeTab === 'scorecard' && (
-          <div className="tab-content">
-            <div className="panel left-panel">
-              <h2>📊 Match Score</h2>
-
-              <div className="score-box">
-                <label>Batting Team</label>
+      {/* MAIN 3-COLUMN LAYOUT */}
+      <div className="main-layout">
+        {/* LEFT PANEL - Match Score & Rates */}
+        <div className="left-panel">
+          <div className="panel-section">
+            <h3>Match Score</h3>
+            <div className="score-grid">
+              <div className="score-team">
+                <label>Batting</label>
                 <input
                   type="text"
-                  value={matchData.teams.batting.name}
+                  value={matchData.teams.batting.name || ''}
                   onChange={(e) =>
                     updateMatch({
-                      teams: {
-                        ...matchData.teams,
-                        batting: { ...matchData.teams.batting, name: e.target.value },
-                      },
+                      teams: { ...matchData.teams, batting: { ...matchData.teams.batting, name: e.target.value } },
                     })
                   }
-                  className="input-team"
+                  className="input-text"
                 />
-
-                <div className="score-display">
-                  <div className="score-item">
-                    <label>Runs</label>
-                    <input
-                      type="number"
-                      value={matchData.teams.batting.runs}
-                      onChange={(e) =>
-                        updateMatch({
-                          teams: {
-                            ...matchData.teams,
-                            batting: { ...matchData.teams.batting, runs: parseInt(e.target.value) || 0 },
-                          },
-                        })
-                      }
-                      className="input-large"
-                    />
-                  </div>
-                  <div className="score-item">
-                    <label>Wickets</label>
-                    <input
-                      type="number"
-                      value={matchData.teams.batting.wickets}
-                      onChange={(e) =>
-                        updateMatch({
-                          teams: {
-                            ...matchData.teams,
-                            batting: { ...matchData.teams.batting, wickets: parseInt(e.target.value) || 0 },
-                          },
-                        })
-                      }
-                      className="input-large"
-                    />
-                  </div>
-                  <div className="score-item">
-                    <label>Overs</label>
-                    <input
-                      type="text"
-                      value={matchData.teams.batting.overs}
-                      onChange={(e) =>
-                        updateMatch({
-                          teams: {
-                            ...matchData.teams,
-                            batting: { ...matchData.teams.batting, overs: e.target.value },
-                          },
-                        })
-                      }
-                      className="input-large"
-                      placeholder="0.0"
-                    />
-                  </div>
-                </div>
               </div>
-
-              <div className="match-meta">
-                <label>Venue</label>
-                <input
-                  type="text"
-                  value={matchData.venue}
-                  onChange={(e) => updateMatch({ venue: e.target.value })}
-                  className="input-full"
-                />
-
-                <label>Format</label>
-                <select value={matchData.format} onChange={(e) => updateMatch({ format: e.target.value })}>
-                  <option>ODI</option>
-                  <option>T20</option>
-                  <option>Test</option>
-                </select>
-
-                <label>Total Overs</label>
+            </div>
+            <div className="score-display">
+              <div className="score-stat">
                 <input
                   type="number"
-                  value={matchData.totalOvers}
-                  onChange={(e) => updateMatch({ totalOvers: parseInt(e.target.value) || 50 })}
-                  className="input-full"
+                  value={matchData.teams.batting.runs || 0}
+                  onChange={(e) =>
+                    updateMatch({
+                      teams: { ...matchData.teams, batting: { ...matchData.teams.batting, runs: parseInt(e.target.value) || 0 } },
+                    })
+                  }
+                  className="input-score"
                 />
-
-                <label>Target (2nd Innings)</label>
+                <span className="score-label">Runs</span>
+              </div>
+              <div className="score-stat">
                 <input
                   type="number"
-                  value={matchData.teams.batting.target}
+                  value={matchData.teams.batting.wickets || 0}
                   onChange={(e) =>
                     updateMatch({
-                      teams: {
-                        ...matchData.teams,
-                        batting: { ...matchData.teams.batting, target: parseInt(e.target.value) || 0 },
-                      },
+                      teams: { ...matchData.teams, batting: { ...matchData.teams.batting, wickets: parseInt(e.target.value) || 0 } },
                     })
                   }
-                  className="input-full"
+                  className="input-score"
                 />
+                <span className="score-label">Wickets</span>
               </div>
-            </div>
-
-            <div className="panel middle-panel">
-              <h2>🏏 Current Players</h2>
-
-              <div className="player-card">
-                <h3>Striker: {matchData.currentBatsmen.striker.name}</h3>
-                <div className="stats-grid">
-                  <div>
-                    <label>Runs</label>
-                    <input
-                      type="number"
-                      value={matchData.currentBatsmen.striker.runs}
-                      onChange={(e) =>
-                        updateBatsman('striker', { runs: parseInt(e.target.value) || 0 })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label>Balls</label>
-                    <input
-                      type="number"
-                      value={matchData.currentBatsmen.striker.balls}
-                      onChange={(e) =>
-                        updateBatsman('striker', { balls: parseInt(e.target.value) || 0 })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label>4s</label>
-                    <input
-                      type="number"
-                      value={matchData.currentBatsmen.striker.fours}
-                      onChange={(e) =>
-                        updateBatsman('striker', { fours: parseInt(e.target.value) || 0 })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label>6s</label>
-                    <input
-                      type="number"
-                      value={matchData.currentBatsmen.striker.sixes}
-                      onChange={(e) =>
-                        updateBatsman('striker', { sixes: parseInt(e.target.value) || 0 })
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="player-card">
-                <h3>Non-Striker: {matchData.currentBatsmen.nonStriker.name}</h3>
-                <div className="stats-grid">
-                  <div>
-                    <label>Runs</label>
-                    <input
-                      type="number"
-                      value={matchData.currentBatsmen.nonStriker.runs}
-                      onChange={(e) =>
-                        updateBatsman('nonStriker', { runs: parseInt(e.target.value) || 0 })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label>Balls</label>
-                    <input
-                      type="number"
-                      value={matchData.currentBatsmen.nonStriker.balls}
-                      onChange={(e) =>
-                        updateBatsman('nonStriker', { balls: parseInt(e.target.value) || 0 })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label>4s</label>
-                    <input
-                      type="number"
-                      value={matchData.currentBatsmen.nonStriker.fours}
-                      onChange={(e) =>
-                        updateBatsman('nonStriker', { fours: parseInt(e.target.value) || 0 })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label>6s</label>
-                    <input
-                      type="number"
-                      value={matchData.currentBatsmen.nonStriker.sixes}
-                      onChange={(e) =>
-                        updateBatsman('nonStriker', { sixes: parseInt(e.target.value) || 0 })
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <button className="btn btn-secondary" onClick={swapBatsmen} style={{ marginTop: '10px' }}>
-                ⇄ Swap Batsmen
-              </button>
-
-              <div className="player-card">
-                <h3>Current Bowler: {matchData.currentBowler.name}</h3>
-                <div className="stats-grid">
-                  <div>
-                    <label>Overs</label>
-                    <input
-                      type="text"
-                      value={matchData.currentBowler.overs}
-                      onChange={(e) => updateBowler({ overs: e.target.value })}
-                      placeholder="0.0"
-                    />
-                  </div>
-                  <div>
-                    <label>Runs</label>
-                    <input
-                      type="number"
-                      value={matchData.currentBowler.runs}
-                      onChange={(e) => updateBowler({ runs: parseInt(e.target.value) || 0 })}
-                    />
-                  </div>
-                  <div>
-                    <label>Wickets</label>
-                    <input
-                      type="number"
-                      value={matchData.currentBowler.wickets}
-                      onChange={(e) => updateBowler({ wickets: parseInt(e.target.value) || 0 })}
-                    />
-                  </div>
-                  <div>
-                    <label>Maidens</label>
-                    <input
-                      type="number"
-                      value={matchData.currentBowler.maidens}
-                      onChange={(e) => updateBowler({ maidens: parseInt(e.target.value) || 0 })}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <button className="btn btn-secondary" onClick={() => setShowBowlerChange(true)} style={{ marginTop: '10px' }}>
-                🔄 Change Bowler
-              </button>
-
-              {showBowlerChange && (
-                <div className="modal-overlay">
-                  <div className="modal-content">
-                    <h3>Select Bowler</h3>
-                    <div className="bowler-list">
-                      {matchData.playingXI.bowling.map((bowler) => (
-                        <button
-                          key={bowler.id}
-                          className="bowler-option"
-                          onClick={() => {
-                            changeBowler(bowler.id);
-                            setShowBowlerChange(false);
-                          }}
-                        >
-                          {bowler.name} ({bowler.role})
-                        </button>
-                      ))}
-                    </div>
-                    <button className="btn btn-danger" onClick={() => setShowBowlerChange(false)}>
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <div className="player-card">
-                <h3>Partnership</h3>
-                <div className="stats-grid-2">
-                  <div>
-                    <label>Runs</label>
-                    <input
-                      type="number"
-                      value={matchData.partnership.runs}
-                      onChange={(e) =>
-                        updateMatch({
-                          partnership: { ...matchData.partnership, runs: parseInt(e.target.value) || 0 },
-                        })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label>Balls</label>
-                    <input
-                      type="number"
-                      value={matchData.partnership.balls}
-                      onChange={(e) =>
-                        updateMatch({
-                          partnership: { ...matchData.partnership, balls: parseInt(e.target.value) || 0 },
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="player-card">
-                <h3>Rates & Win Info</h3>
-                <div className="stats-grid-2">
-                  <div>
-                    <label>CRR</label>
-                    <input type="text" value={matchData.crr} onChange={(e) => updateMatch({ crr: e.target.value })} />
-                  </div>
-                  <div>
-                    <label>RRR</label>
-                    <input type="text" value={matchData.rrr} onChange={(e) => updateMatch({ rrr: e.target.value })} />
-                  </div>
-                </div>
-                <div style={{ marginTop: '10px' }}>
-                  <label>Projected Runs (150 balls)</label>
-                  <input
-                    type="number"
-                    value={matchData.projectredRuns}
-                    onChange={(e) => updateMatch({ projectredRuns: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
-                <button className="btn btn-primary" onClick={calculateWinProbability} style={{ marginTop: '10px' }}>
-                  🎯 Calc Win From This Ball
-                </button>
-                <div className="win-info">{matchData.winsFromThisBall}</div>
-              </div>
-            </div>
-
-            <div className="panel right-panel">
-              <h2>⚡ Quick Actions</h2>
-
-              <div className="action-buttons">
-                <button className="btn btn-primary" onClick={() => updateMatch({ teams: { ...matchData.teams, batting: { ...matchData.teams.batting, runs: matchData.teams.batting.runs + 1 } } })}>
-                  +1 Run
-                </button>
-                <button className="btn btn-primary" onClick={() => updateMatch({ teams: { ...matchData.teams, batting: { ...matchData.teams.batting, runs: matchData.teams.batting.runs + 4 } } })}>
-                  +4 Runs
-                </button>
-                <button className="btn btn-primary" onClick={() => updateMatch({ teams: { ...matchData.teams, batting: { ...matchData.teams.batting, runs: matchData.teams.batting.runs + 6 } } })}>
-                  +6 Runs
-                </button>
-              </div>
-
-              <div className="action-buttons">
-                <button className="btn btn-danger" onClick={() => recordWicket('bowled')}>
-                  🔴 Wicket (Bowled)
-                </button>
-              </div>
-
-              <div className="action-section">
-                <h3>Batsman Updates</h3>
-                <button
-                  className="btn btn-sm"
-                  onClick={() => updateBatsman('striker', { runs: matchData.currentBatsmen.striker.runs + 1, balls: matchData.currentBatsmen.striker.balls + 1 })}
-                >
-                  +1 (1 Ball)
-                </button>
-                <button
-                  className="btn btn-sm"
-                  onClick={() =>
-                    updateBatsman('striker', {
-                      runs: matchData.currentBatsmen.striker.runs + 4,
-                      fours: matchData.currentBatsmen.striker.fours + 1,
-                      balls: matchData.currentBatsmen.striker.balls + 1,
-                    })
-                  }
-                >
-                  +4 (Four)
-                </button>
-                <button
-                  className="btn btn-sm"
-                  onClick={() =>
-                    updateBatsman('striker', {
-                      runs: matchData.currentBatsmen.striker.runs + 6,
-                      sixes: matchData.currentBatsmen.striker.sixes + 1,
-                      balls: matchData.currentBatsmen.striker.balls + 1,
-                    })
-                  }
-                >
-                  +6 (Six)
-                </button>
-              </div>
-
-              <div className="action-section">
-                <h3>Swaps</h3>
-                <button className="btn btn-secondary" onClick={swapBatsmen}>
-                  ⇄ Swap Batsmen
-                </button>
-                <button className="btn btn-secondary" onClick={() => setShowBowlerChange(true)}>
-                  🔄 Change Bowler
-                </button>
-              </div>
-
-              <div className="preview-section">
-                <h3>📺 Live Preview</h3>
-                <div className="preview-text">
-                  <strong>{matchData.teams.batting.name}:</strong>
-                  <br />
-                  {matchData.teams.batting.runs}/{matchData.teams.batting.wickets} ({matchData.teams.batting.overs} ov)
-                  <br />
-                  <br />
-                  <strong>Striker:</strong> {matchData.currentBatsmen.striker.runs}({matchData.currentBatsmen.striker.balls})
-                  <br />
-                  <strong>Bowler:</strong> {matchData.currentBowler.runs}/{matchData.currentBowler.wickets} ({matchData.currentBowler.overs})
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* PLAYING XI TAB */}
-        {activeTab === 'playing11' && (
-          <div className="tab-content">
-            <div className="panel full-panel">
-              <h2>🏏 Playing XI Management</h2>
-
-              <div className="two-column">
-                <div>
-                  <h3>Batting Order ({matchData.teams.batting.name})</h3>
-                  <div className="playing-xi-list">
-                    {matchData.playingXI.batting.map((player, idx) => (
-                      <div key={player.id} className="xi-item">
-                        <span className="xi-number">{idx + 1}</span>
-                        <span className="xi-name">{player.name}</span>
-                        <span className="xi-role">{player.role}</span>
-                        {matchData.currentBatsmen.striker.id === player.id && <span className="xi-badge">⭐ Striker</span>}
-                        {matchData.currentBatsmen.nonStriker.id === player.id && (
-                          <span className="xi-badge">⭐ NonStrike</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3>Bowling Attack ({matchData.teams.bowling.name})</h3>
-                  <div className="playing-xi-list">
-                    {matchData.playingXI.bowling.map((player, idx) => (
-                      <div key={player.id} className="xi-item">
-                        <span className="xi-number">{player.number}</span>
-                        <span className="xi-name">{player.name}</span>
-                        <span className="xi-role">{player.role}</span>
-                        {matchData.currentBowler.id === player.id && <span className="xi-badge">🎯 Current</span>}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ marginTop: '30px' }}>
-                <h3>Batsmen Out</h3>
-                {matchData.batsmansOut.filter((w) => w.batsmanId !== 0).length === 0 ? (
-                  <p>No wickets yet</p>
-                ) : (
-                  <div className="wickets-list">
-                    {matchData.batsmansOut
-                      .filter((w) => w.batsmanId !== 0)
-                      .map((w, idx) => (
-                        <div key={idx} className="wicket-item">
-                          Wicket {w.wicketNumber}: {w.dismissal} - {w.runs}({w.balls})
-                        </div>
-                      ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* OVERLAY TAB */}
-        {activeTab === 'overlay' && (
-          <div className="tab-content">
-            <div className="panel full-panel">
-              <h2>🎨 Overlay Customization</h2>
-
-              <div className="two-column">
-                <div>
-                  <h3>Team Logos</h3>
-
-                  <div className="logo-section">
-                    <label>{matchData.teams.batting.name} Logo</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => uploadLogo('batting', e.target.files[0])}
-                      className="input-full"
-                    />
-                    {matchData.teams.batting.logo && <img src={matchData.teams.batting.logo} alt="Logo" style={{ maxWidth: '100px', marginTop: '10px' }} />}
-                  </div>
-
-                  <div className="logo-section">
-                    <label>{matchData.teams.bowling.name} Logo</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => uploadLogo('bowling', e.target.files[0])}
-                      className="input-full"
-                    />
-                    {matchData.teams.bowling.logo && <img src={matchData.teams.bowling.logo} alt="Logo" style={{ maxWidth: '100px', marginTop: '10px' }} />}
-                  </div>
-                </div>
-
-                <div>
-                  <h3>Team Colors</h3>
-                  <label>Batting Team Color</label>
-                  <input
-                    type="color"
-                    value={matchData.teams.batting.color}
-                    onChange={(e) =>
-                      updateMatch({
-                        teams: { ...matchData.teams, batting: { ...matchData.teams.batting, color: e.target.value } },
-                      })
-                    }
-                    className="input-full"
-                  />
-
-                  <label style={{ marginTop: '15px' }}>Bowling Team Color</label>
-                  <input
-                    type="color"
-                    value={matchData.teams.bowling.color}
-                    onChange={(e) =>
-                      updateMatch({
-                        teams: { ...matchData.teams, bowling: { ...matchData.teams.bowling, color: e.target.value } },
-                      })
-                    }
-                    className="input-full"
-                  />
-                </div>
-              </div>
-
-              <div style={{ marginTop: '30px' }}>
-                <h3>Custom Text (Updates Overlay in Real-Time)</h3>
-
-                <label>Header Text</label>
+              <div className="score-stat">
                 <input
                   type="text"
-                  value={matchData.customText.header || ''}
+                  value={matchData.teams.batting.overs || '0.0'}
                   onChange={(e) =>
                     updateMatch({
-                      customText: { ...matchData.customText, header: e.target.value },
+                      teams: { ...matchData.teams, batting: { ...matchData.teams.batting, overs: e.target.value } },
                     })
                   }
-                  className="input-full"
-                  placeholder="e.g., Match Day 5, Group Stage"
+                  className="input-score"
+                  placeholder="0.0"
                 />
+                <span className="score-label">Overs</span>
+              </div>
+            </div>
+          </div>
 
-                <label style={{ marginTop: '15px' }}>Middle Text (Main Custom Message)</label>
-                <textarea
-                  value={matchData.customText.middle || ''}
-                  onChange={(e) =>
-                    updateMatch({
-                      customText: { ...matchData.customText, middle: e.target.value },
-                    })
-                  }
-                  className="input-full"
-                  style={{ minHeight: '80px', padding: '10px' }}
-                  placeholder="e.g., Partnership building nicely here..."
-                />
-
-                <label style={{ marginTop: '15px' }}>Footer Text</label>
+          <div className="panel-section">
+            <h4>Extras</h4>
+            <div className="extras-grid">
+              <div className="extra-item">
+                <label>Wides</label>
                 <input
-                  type="text"
-                  value={matchData.customText.footer || ''}
-                  onChange={(e) =>
-                    updateMatch({
-                      customText: { ...matchData.customText, footer: e.target.value },
-                    })
-                  }
-                  className="input-full"
-                  placeholder="e.g., Follow us on Twitter @cricket"
+                  type="number"
+                  value={matchData.extras.wides || 0}
+                  onChange={(e) => updateMatch({ extras: { ...matchData.extras, wides: parseInt(e.target.value) || 0 } })}
+                  className="input-small"
                 />
               </div>
-
-              <div style={{ marginTop: '30px' }}>
-                <h3>Overlay Preview</h3>
-                <div className="overlay-preview">
-                  <strong>{matchData.matchTitle}</strong>
-                  <br />
-                  {matchData.customText.header && <div>{matchData.customText.header}</div>}
-                  {matchData.customText.middle && <div style={{ fontStyle: 'italic', marginTop: '10px' }}>{matchData.customText.middle}</div>}
-                  {matchData.customText.footer && <div style={{ marginTop: '10px', fontSize: '12px' }}>{matchData.customText.footer}</div>}
-                </div>
+              <div className="extra-item">
+                <label>No-Balls</label>
+                <input
+                  type="number"
+                  value={matchData.extras.noBalls || 0}
+                  onChange={(e) => updateMatch({ extras: { ...matchData.extras, noBalls: parseInt(e.target.value) || 0 } })}
+                  className="input-small"
+                />
               </div>
             </div>
           </div>
-        )}
 
-        {/* SETTINGS TAB */}
-        {activeTab === 'settings' && (
-          <div className="tab-content">
-            <div className="panel full-panel">
-              <h2>⚙️ Match Settings</h2>
-
-              <div className="two-column">
-                <div>
-                  <h3>Toss Information</h3>
-                  <label>Toss Winner</label>
-                  <select
-                    value={matchData.toss.winner}
-                    onChange={(e) => updateMatch({ toss: { ...matchData.toss, winner: e.target.value } })}
-                  >
-                    <option value={matchData.teams.batting.name}>{matchData.teams.batting.name}</option>
-                    <option value={matchData.teams.bowling.name}>{matchData.teams.bowling.name}</option>
-                  </select>
-
-                  <label style={{ marginTop: '15px' }}>Toss Decision</label>
-                  <select
-                    value={matchData.toss.decision}
-                    onChange={(e) => updateMatch({ toss: { ...matchData.toss, decision: e.target.value } })}
-                  >
-                    <option value="bat">Bat</option>
-                    <option value="bowl">Bowl</option>
-                  </select>
-                </div>
-
-                <div>
-                  <h3>Inning Details</h3>
-                  <label>Current Inning</label>
-                  <input type="number" value={matchData.inningNumber} onChange={(e) => updateMatch({ inningNumber: parseInt(e.target.value) || 1 })} />
-
-                  <label style={{ marginTop: '15px' }}>Status</label>
-                  <select value={matchData.status} onChange={(e) => updateMatch({ status: e.target.value })}>
-                    <option value="live">🔴 Live</option>
-                    <option value="paused">⏸ Paused</option>
-                    <option value="completed">✓ Completed</option>
-                  </select>
-                </div>
+          <div className="panel-section">
+            <h4>Rates</h4>
+            <div className="rate-display">
+              <div className="rate-item">
+                <span className="rate-label">CRR</span>
+                <span className="rate-value">{crr}</span>
               </div>
-
-              <div style={{ marginTop: '30px' }}>
-                <h3>PSD Template Settings (Future)</h3>
-                <select value={matchData.psdTemplate} onChange={(e) => updateMatch({ psdTemplate: e.target.value })}>
-                  <option value="default">Default Template</option>
-                  <option value="premium">Premium Branding</option>
-                  <option value="minimal">Minimal Design</option>
-                </select>
-                <p style={{ marginTop: '10px', color: '#aaa', fontSize: '12px' }}>PSD file support coming soon. Upload your custom PSD templates here.</p>
-              </div>
-
-              <div style={{ marginTop: '30px' }}>
-                <button className="btn btn-danger-outline" onClick={() => axios.post('http://localhost:3000/api/reset')}>
-                  🔄 Reset Match
-                </button>
+              <div className="rate-item">
+                <span className="rate-label">RRR</span>
+                <span className="rate-value">{rrr}</span>
               </div>
             </div>
           </div>
-        )}
+
+          <div className="panel-section">
+            <h4>Status</h4>
+            <select
+              value={matchData.status || 'ongoing'}
+              onChange={(e) => updateMatch({ status: e.target.value })}
+              className="input-text"
+            >
+              <option value="ongoing">🔴 Ongoing</option>
+              <option value="paused">🟡 Paused</option>
+              <option value="completed">🟢 Completed</option>
+            </select>
+          </div>
+        </div>
+
+        {/* CENTER PANEL - Players & Stats */}
+        <div className="center-panel">
+          {/* Ball-by-Ball Bar */}
+          <div className="panel-section">
+            <BallByBallBar matchData={matchData} />
+          </div>
+
+          {/* Striker Card */}
+          <div className="player-card">
+            <h4 style={{ color: COLORS.strikerYellow }}>🏏 Striker: {matchData.currentBatsmen.striker.name}</h4>
+            <div className="player-stats">
+              <div className="stat-box">
+                <span className="stat-val">{matchData.currentBatsmen.striker.runs}</span>
+                <span className="stat-lbl">Runs</span>
+              </div>
+              <div className="stat-box">
+                <span className="stat-val">{matchData.currentBatsmen.striker.balls}</span>
+                <span className="stat-lbl">Balls</span>
+              </div>
+              <div className="stat-box">
+                <span className="stat-val">{matchData.currentBatsmen.striker.fours}</span>
+                <span className="stat-lbl">4s</span>
+              </div>
+              <div className="stat-box">
+                <span className="stat-val">{matchData.currentBatsmen.striker.sixes}</span>
+                <span className="stat-lbl">6s</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Non-Striker Card */}
+          <div className="player-card">
+            <h4 style={{ color: COLORS.nonStrikerCyan }}>🏃 Non-Striker: {matchData.currentBatsmen.nonStriker.name}</h4>
+            <div className="player-stats">
+              <div className="stat-box">
+                <span className="stat-val">{matchData.currentBatsmen.nonStriker.runs}</span>
+                <span className="stat-lbl">Runs</span>
+              </div>
+              <div className="stat-box">
+                <span className="stat-val">{matchData.currentBatsmen.nonStriker.balls}</span>
+                <span className="stat-lbl">Balls</span>
+              </div>
+              <div className="stat-box">
+                <span className="stat-val">{matchData.currentBatsmen.nonStriker.fours}</span>
+                <span className="stat-lbl">4s</span>
+              </div>
+              <div className="stat-box">
+                <span className="stat-val">{matchData.currentBatsmen.nonStriker.sixes}</span>
+                <span className="stat-lbl">6s</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bowler Card */}
+          <div className="player-card">
+            <h4 style={{ color: COLORS.bowlerRed }}>⚾ Bowler: {matchData.currentBowler.name}</h4>
+            <div className="player-stats">
+              <div className="stat-box">
+                <span className="stat-val">{matchData.currentBowler.runs}</span>
+                <span className="stat-lbl">Runs</span>
+              </div>
+              <div className="stat-box">
+                <span className="stat-val">{matchData.currentBowler.wickets}</span>
+                <span className="stat-lbl">Wickets</span>
+              </div>
+              <div className="stat-box">
+                <span className="stat-val">{matchData.currentBowler.balls}</span>
+                <span className="stat-lbl">Balls</span>
+              </div>
+              <div className="stat-box">
+                <span className="stat-val">{((matchData.currentBowler.runs / Math.max(1, matchData.currentBowler.balls / 6)).toFixed(2))}</span>
+                <span className="stat-lbl">Econ</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Partnership */}
+          <div className="player-card">
+            <h4 style={{ color: COLORS.partnershipGreen }}>🤝 Partnership</h4>
+            <div className="player-stats">
+              <div className="stat-box">
+                <span className="stat-val">
+                  {(matchData.currentBatsmen.striker.runs + matchData.currentBatsmen.nonStriker.runs) || 0}
+                </span>
+                <span className="stat-lbl">Runs</span>
+              </div>
+              <div className="stat-box">
+                <span className="stat-val">
+                  {(matchData.currentBatsmen.striker.balls + matchData.currentBatsmen.nonStriker.balls) || 0}
+                </span>
+                <span className="stat-lbl">Balls</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT PANEL - Quick Actions & Reports */}
+        <div className="right-panel">
+          {/* Quick Action Buttons - 2x2 Grid */}
+          <div className="quick-actions">
+            <button
+              className="action-btn plus-one"
+              onClick={() => updateMatch({ teams: { ...matchData.teams, batting: { ...matchData.teams.batting, runs: matchData.teams.batting.runs + 1 } } })}
+            >
+              +1
+            </button>
+            <button
+              className="action-btn plus-four"
+              onClick={() => updateMatch({ teams: { ...matchData.teams, batting: { ...matchData.teams.batting, runs: matchData.teams.batting.runs + 4 } } })}
+            >
+              +4
+            </button>
+            <button
+              className="action-btn plus-six"
+              onClick={() => updateMatch({ teams: { ...matchData.teams, batting: { ...matchData.teams.batting, runs: matchData.teams.batting.runs + 6 } } })}
+            >
+              +6
+            </button>
+            <button className="action-btn wicket" onClick={() => recordWicket()}>
+              W
+            </button>
+          </div>
+
+          {/* Player Actions */}
+          <div className="player-actions">
+            <button className="secondary-btn" onClick={() => swapBatsmen()}>
+              ↔️ Swap Batsmen
+            </button>
+            <button className="secondary-btn" onClick={() => changeBowler()}>
+              🔄 Change Bowler
+            </button>
+          </div>
+
+          {/* Report Buttons - 2x2 Grid */}
+          <div className="report-buttons">
+            <button className="report-btn" onClick={() => setShowBattingReport(true)}>
+              📊 Batting
+            </button>
+            <button className="report-btn" onClick={() => setShowBowlingReport(true)}>
+              ⚾ Bowling
+            </button>
+            <button className="report-btn" onClick={() => setShowPartnershipReport(true)}>
+              🤝 Partnership
+            </button>
+            <button className="report-btn" onClick={() => setShowMainReport(true)}>
+              📈 Summary
+            </button>
+          </div>
+
+          {/* Live Preview */}
+          {matchData && <OverlayPreview matchData={matchData} />}
+        </div>
       </div>
 
-      <footer className="footer">
-        <p>
-          ✅ OBS Overlay: <code>http://localhost:3000/overlay.html</code> | Template: <strong>{matchData.overlayTemplate}</strong>
-        </p>
+      {/* FOOTER */}
+      <footer className="app-footer">
+        <div className="footer-left">
+          <strong>OBS Overlay:</strong> <code>http://localhost:3000/overlay.html</code>
+        </div>
+        <div className="footer-right">
+          <span>⌨️ Shortcuts: <strong>1/4/6</strong>=Runs | <strong>W</strong>=Wicket | <strong>S</strong>=Swap | <strong>B</strong>=Bowler | <strong>Ctrl+Z</strong>=Undo</span>
+        </div>
       </footer>
+
+      {/* REPORT MODALS */}
+      {showBattingReport && (
+        <div className="modal-overlay" onClick={() => setShowBattingReport(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowBattingReport(false)}>✕</button>
+            <BattingScorecard matchData={matchData} />
+          </div>
+        </div>
+      )}
+
+      {showBowlingReport && (
+        <div className="modal-overlay" onClick={() => setShowBowlingReport(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowBowlingReport(false)}>✕</button>
+            <BowlingScorecard matchData={matchData} />
+          </div>
+        </div>
+      )}
+
+      {showPartnershipReport && (
+        <div className="modal-overlay" onClick={() => setShowPartnershipReport(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowPartnershipReport(false)}>✕</button>
+            <PartnershipReport matchData={matchData} />
+          </div>
+        </div>
+      )}
+
+      {showMainReport && (
+        <div className="modal-overlay" onClick={() => setShowMainReport(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowMainReport(false)}>✕</button>
+            <MainScorecard matchData={matchData} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
